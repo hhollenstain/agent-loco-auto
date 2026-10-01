@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Annotated
 
@@ -20,12 +21,26 @@ from agent_loco.runtime.improve import run_cycle
 from agent_loco.runtime.project import write_default_project_files
 from agent_loco.runtime.watch import watch as watch_loop
 
+REQUIRED_ENV_VARS = ["LOCO_MODEL_NAME", "LOCO_MODEL_BASE_URL"]
+
+
 app = typer.Typer(
     name="loco",
     help="Home-lab coding agent: improve a project, test locally, commit when green.",
     no_args_is_help=True,
 )
 console = Console()
+
+
+def _validate_env() -> None:
+    """Check required environment variables and exit with a helpful message if missing."""
+    missing = [var for var in REQUIRED_ENV_VARS if var not in os.environ]
+    if missing:
+        console.print("[red]ERROR:[/red] Required environment variables not set:")
+        for var in missing:
+            console.print(f"  - {var}")
+        console.print("\nPlease create a .env file from .env.example or export these variables.")
+        raise SystemExit(1)
 
 
 def _settings(**overrides: object) -> Settings:
@@ -65,11 +80,13 @@ def _root(
     ] = False,
 ) -> None:
     """Home-lab coding agent."""
+    pass
 
 
 @app.command()
 def doctor() -> None:
     """Report hardware, tooling, and model-endpoint health."""
+    _validate_env()
     settings = _settings()
     hw = detect_hardware()
 
@@ -104,6 +121,7 @@ def init(
     ] = Path("."),
 ) -> None:
     """Create .loco/config.yaml and .loco/goals.md in a project."""
+    _validate_env()
     created = write_default_project_files(workspace)
     if created:
         for path in created:
@@ -121,6 +139,7 @@ def clone(
     ] = None,
 ) -> None:
     """Clone a git repo into the workspace volume and write .loco scaffolding."""
+    _validate_env()
     from agent_loco.runtime.workspaces import clone_workspace
 
     if dest is None:
@@ -196,6 +215,7 @@ def run(
     ] = False,
 ) -> None:
     """Run one improve → test → commit cycle against a project."""
+    _validate_env()
     settings = _settings(
         model_name=model_name,
         model_base_url=base_url,
@@ -260,6 +280,7 @@ def watch_command(
     ] = None,
 ) -> None:
     """Keep improving a project on an interval."""
+    _validate_env()
     settings = _settings(
         model_name=model_name,
         model_base_url=base_url,
@@ -303,6 +324,7 @@ def ui_command(
     auto_commit: Annotated[bool | None, typer.Option("--commit/--no-commit")] = None,
 ) -> None:
     """Start a local web UI to queue and run tasks."""
+    _validate_env()
     settings = _settings(
         model_name=model_name,
         model_base_url=base_url,
