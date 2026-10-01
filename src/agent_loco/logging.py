@@ -30,17 +30,20 @@ def format_elapsed(seconds: float) -> str:
     return f"{seconds:.1f}s"
 
 
-def setup_logging(level: str) -> None:
+def setup_logging(level: str = "INFO") -> None:
     handler = RichHandler(
         rich_tracebacks=True,
         show_path=False,
         show_time=False,
         markup=False,
     )
-    handler.setFormatter(UtcFormatter(LOG_FORMAT))
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(level.upper())
+    console_handler.setFormatter(UtcFormatter(LOG_FORMAT))
+
     logging.basicConfig(
         level=level.upper(),
-        handlers=[handler],
+        handlers=[handler, console_handler],
         force=True,
     )
     for noisy in ("httpx", "httpcore", "openai"):
