@@ -26,3 +26,34 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     git_author_name: str | None = None
     git_author_email: str | None = None
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._validate_required_settings()
+
+    def _validate_required_settings(self) -> None:
+        """Validate that all required environment variables are set.
+
+        Raises:
+            ValueError: If any required setting is missing.
+
+        Required settings are critical for the application to function:
+        - LLM connection (model_name, model_base_url)
+        - Minimum operational thresholds
+        """
+        required_vars = [
+            ("LOCO_MODEL_NAME", self.model_name),
+            ("LOCO_MODEL_BASE_URL", self.model_base_url),
+        ]
+
+        missing = [
+            name for name, value in required_vars if not value
+        ]
+
+        if missing:
+            raise ValueError(
+                f"Missing required environment variables: {', '.join(missing)}.\n"
+                f"Set these before starting the agent. Example:\n"
+                f"  export LOCO_MODEL_NAME='your-model-name'\n"
+                f"  export LOCO_MODEL_BASE_URL='http://your-server:11434/v1'"
+            )
