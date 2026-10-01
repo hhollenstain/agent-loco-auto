@@ -2,6 +2,30 @@
 
 A home-lab coding agent that sits on a project, makes a change, runs that project's tests locally, and only then commits (and optionally publishes) the result. Create-PR also requires a separate review that the diff actually fulfills the stated goal — green tests alone are not enough.
 
+## Install / Quick start
+
+```bash
+# Install from source
+pip install .
+# or with uv
+uv sync --extra dev
+```
+
+CLI entry point:
+```bash
+loco --help
+```
+
+Test / lint:
+```bash
+pytest -q
+ruff check src tests
+```
+
+See the bundled demo:
+- `examples/demo-project/`
+- Skill conventions: `skills/agent-loco/SKILL.md`
+
 The agent process is the same on an Apple Silicon MacBook and on a Linux box with an NVIDIA GPU. Inference is a separate OpenAI-compatible server:
 
 | Machine | Model server | Why |
