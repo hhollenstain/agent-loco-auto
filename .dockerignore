@@ -7,6 +7,10 @@ workspaces
 .ruff_cache
 .mypy_cache
 .env
+.env*
 dist
 build
 *.egg-info
+uv.lock
+tests/
+examples/
