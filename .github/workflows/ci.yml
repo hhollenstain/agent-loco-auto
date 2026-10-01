@@ -26,6 +26,9 @@ jobs:
       - name: Run ruff check
         run: uv run ruff check src tests
 
+      - name: Ruff format check
+        run: uv run ruff format --check src tests
+
   test:
     runs-on: ubuntu-latest
     steps:
