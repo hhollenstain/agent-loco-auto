@@ -17,7 +17,13 @@ from agent_loco.llm.client import (
     normalize_model_base_url,
 )
 from agent_loco.logging import UtcFormatter, utcnow_iso
-from agent_loco.progress import bind_progress, record_event, reset_progress, token_usage_from_events
+from agent_loco.progress import (
+    bind_progress,
+    public_event,
+    record_event,
+    reset_progress,
+    token_usage_from_events,
+)
 from agent_loco.runtime.improve import CycleResult, run_cycle
 
 log = logging.getLogger("loco")
@@ -90,7 +96,7 @@ class Task:
             "error": self.error,
             "sha_before": self.sha_before,
             "branch": self.branch,
-            "events": list(self.events),
+            "events": [public_event(event) for event in self.events],
             **token_usage_from_events(self.events),
             "context_window": self.context_window,
         }

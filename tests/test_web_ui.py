@@ -625,6 +625,108 @@ def test_history_search_matches_pr_url(settings: Settings, tmp_path: Path) -> No
         manager.shutdown(wait=False)
 
 
+def test_task_and_history_polls_omit_llm_transcripts(
+    settings: Settings, tmp_path: Path
+) -> None:
+    blob = ("x" * 800) + "SECRET_TRANSCRIPT"
+    (tmp_path / "history.json").write_text(
+        json.dumps(
+            [
+                {
+                    "status": "success",
+                    "goal": "Past run",
+                    "events": [
+                        {
+                            "kind": "llm",
+                            "ok": True,
+                            "messages": [{"role": "system", "content": blob}],
+                            "response": blob,
+                        }
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    gate = threading.Event()
+
+    def runner(task: Task) -> CycleResult:
+        task.events.append(
+            {
+                "kind": "llm",
+                "ok": True,
+                "messages": [{"role": "user", "content": blob}],
+                "response": blob,
+                "prompt_tokens": 9,
+            }
+        )
+        gate.wait(timeout=2)
+        return _ok_result(task.goal)
+
+    manager = TaskManager(settings, runner=runner)
+    app = create_app(manager, default_workspace=tmp_path)
+    client = TestClient(app)
+    try:
+        home = client.get("/")
+        assert b"refreshQueued" in home.content
+        assert b"async function refreshNow(" in home.content
+        created = client.post(
+            "/api/tasks",
+            json={"workspace": str(tmp_path), "goal": "stay responsive"},
+        )
+        assert created.status_code == 201
+        task_id = created.json()["id"]
+        body = None
+        for _ in range(50):
+            listed = client.get("/api/tasks").json()
+            match = next((item for item in listed if item["id"] == task_id), None)
+            if match and match.get("events"):
+                body = match
+                break
+            time.sleep(0.05)
+        assert body is not None
+        dumped = json.dumps(body)
+        assert "SECRET_TRANSCRIPT" not in dumped
+        assert "messages" not in body["events"][0]
+        history = client.get("/api/history").json()
+        assert "SECRET_TRANSCRIPT" not in json.dumps(history)
+        assert "messages" not in history["items"][0]["events"][0]
+    finally:
+        gate.set()
+        manager.shutdown(wait=False)
+
+
+def test_history_load_reuses_unchanged_files(
+    settings: Settings, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from agent_loco.web_ui import UiState
+
+    (tmp_path / "history.json").write_text(
+        json.dumps([{"status": "success", "goal": "cached"}]),
+        encoding="utf-8",
+    )
+    manager = TaskManager(settings, runner=lambda task: _ok_result(task.goal))
+    try:
+        ui = UiState(
+            manager,
+            default_workspace=tmp_path,
+            default_goal=None,
+            default_create_pr=False,
+        )
+        first = ui.load_history(tmp_path)
+        assert first[0]["goal"] == "cached"
+
+        def boom(*_args: object, **_kwargs: object) -> object:
+            raise AssertionError("history should be cached")
+
+        monkeypatch.setattr("agent_loco.web_ui.json.loads", boom)
+        monkeypatch.setattr("agent_loco.web_ui.json.load", boom)
+        second = ui.load_history(tmp_path)
+        assert second is first
+    finally:
+        manager.shutdown(wait=False)
+
+
 def test_remember_server_dedupes_and_keeps_newest_first(tmp_path: Path) -> None:
     first = remember_server(tmp_path, "10.0.0.8:8000", default="http://127.0.0.1:11434/v1")
     assert first[0]["url"] == "http://10.0.0.8:8000/v1"

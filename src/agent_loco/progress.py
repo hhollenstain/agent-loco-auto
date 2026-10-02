@@ -13,6 +13,7 @@ log = logging.getLogger("loco")
 
 MAX_DIFF_CHARS = 12_000
 MAX_TEST_OUTPUT_CHARS = 16_000
+LLM_SNIPPET = 400
 ProgressToken = Token[list[dict[str, Any]] | None]
 
 _events: ContextVar[list[dict[str, Any]] | None] = ContextVar(
@@ -111,6 +112,57 @@ def clip_output(text: str, limit: int = MAX_TEST_OUTPUT_CHARS) -> str:
     return f"... truncated {omitted} chars\n" + value[-limit:]
 
 
+def clip_text(text: object, limit: int = LLM_SNIPPET) -> str:
+    """Collapse whitespace and keep a short prefix for UI and logs."""
+    value = " ".join(str(text or "").split())
+    if len(value) <= limit:
+        return value
+    return value[: limit - 1] + "…"
+
+
+def llm_turn_snippets(messages: object, response: object) -> tuple[str, str]:
+    """Last non-assistant prompt and the model reply, clipped for the UI."""
+    agent = ""
+    if isinstance(messages, list):
+        for message in reversed(messages):
+            if not isinstance(message, dict):
+                continue
+            if message.get("role") == "assistant":
+                continue
+            agent = clip_text(message.get("content"))
+            if agent:
+                break
+    return agent, clip_text(response)
+
+
+def public_event(event: dict[str, Any] | object) -> dict[str, Any] | object:
+    """Copy a progress event without the live LLM transcript."""
+    if not isinstance(event, dict):
+        return event
+    payload = {key: value for key, value in event.items() if key != "messages"}
+    if event.get("kind") == "llm":
+        if not payload.get("agent") and not payload.get("model"):
+            agent, model = llm_turn_snippets(event.get("messages"), event.get("response"))
+            payload["agent"] = agent
+            payload["model"] = model
+        response = payload.get("response")
+        if isinstance(response, str) and len(response) > LLM_SNIPPET:
+            payload["response"] = clip_text(response)
+    return payload
+
+
+def public_run_item(item: dict[str, Any] | object) -> dict[str, Any] | object:
+    """Copy a run or history payload without LLM transcripts in events."""
+    if not isinstance(item, dict):
+        return item
+    events = item.get("events")
+    if not isinstance(events, list):
+        return item
+    slim = dict(item)
+    slim["events"] = [public_event(event) for event in events]
+    return slim
+
+
 def record_test_run(
     *,
     command: str,
@@ -184,14 +236,14 @@ def timed_complete(
         raise
     elapsed = time.perf_counter() - started
     elapsed_ms = int(round(elapsed * 1000))
-    # Record full conversation details for in-depth console logging
+    agent, model = llm_turn_snippets(messages, turn.text or "")
     record_event(
         kind="llm",
         purpose=purpose,
         ok=True,
         elapsed_ms=elapsed_ms,
-        messages=messages,  # All messages sent to LLM
-        response=turn.text or "",  # LLM's response text
+        agent=agent,
+        model=model,
         prompt_tokens=turn.prompt_tokens,
         completion_tokens=turn.completion_tokens,
         total_tokens=turn.total_tokens,

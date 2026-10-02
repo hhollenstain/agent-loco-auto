@@ -8,6 +8,8 @@ from agent_loco.progress import (
     bind_progress,
     clip_output,
     current_events,
+    public_event,
+    public_run_item,
     record_test_run,
     reset_progress,
     timed_complete,
@@ -65,6 +67,10 @@ def test_timed_complete_records_latency() -> None:
     assert events[0]["prompt_tokens"] == 1200
     assert events[0]["completion_tokens"] == 80
     assert events[0]["total_tokens"] == 1280
+    assert "messages" not in events[0]
+    assert "response" not in events[0]
+    assert events[0]["agent"] == "hi"
+    assert events[0]["model"] == "ok"
 
 
 def test_record_test_run_keeps_failure_tail() -> None:
@@ -89,3 +95,25 @@ def test_record_test_run_keeps_failure_tail() -> None:
     clipped = clip_output("x" * 50 + "TAIL", limit=8)
     assert clipped.endswith("TAIL")
     assert "truncated" in clipped
+
+
+def test_public_event_drops_llm_transcript() -> None:
+    blob = ("x" * 800) + "SECRET_TRANSCRIPT"
+    event = {
+        "kind": "llm",
+        "ok": True,
+        "messages": [
+            {"role": "system", "content": blob},
+            {"role": "user", "content": "fix the freeze"},
+        ],
+        "response": blob,
+    }
+    slim = public_event(event)
+    assert isinstance(slim, dict)
+    assert "messages" not in slim
+    assert slim["agent"] == "fix the freeze"
+    assert "SECRET_TRANSCRIPT" not in slim["model"]
+    assert "SECRET_TRANSCRIPT" not in slim["response"]
+    item = public_run_item({"goal": "keep the UI alive", "events": [event]})
+    assert isinstance(item, dict)
+    assert "messages" not in item["events"][0]

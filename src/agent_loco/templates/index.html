@@ -4454,7 +4454,28 @@
       element.innerHTML = html;
     }
 
+    let refreshInflight = null;
+    let refreshQueued = false;
+
     async function refresh() {
+      if (refreshInflight) {
+        refreshQueued = true;
+        return refreshInflight;
+      }
+      refreshInflight = (async function () {
+        try {
+          do {
+            refreshQueued = false;
+            await refreshNow();
+          } while (refreshQueued);
+        } finally {
+          refreshInflight = null;
+        }
+      })();
+      return refreshInflight;
+    }
+
+    async function refreshNow() {
       const [tasksRes, historyRes] = await Promise.all([
         fetch(`/api/tasks?page=${state.taskPage}&page_size=${state.taskPageSize}`),
         fetch(`/api/history?page=${state.historyPage}&page_size=${state.pageSize}${state.search ? `&search=${encodeURIComponent(state.search)}` : ''}`),

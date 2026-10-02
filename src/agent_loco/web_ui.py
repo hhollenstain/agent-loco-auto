@@ -24,7 +24,7 @@ from pydantic import BaseModel
 
 from agent_loco.config import Settings
 from agent_loco.llm.client import normalize_model_base_url
-from agent_loco.progress import attach_token_usage
+from agent_loco.progress import attach_token_usage, clip_text, llm_turn_snippets, public_run_item
 from agent_loco.runtime.importer import load_goals_from_workspace
 from agent_loco.runtime.project import (
     default_guidelines,
@@ -180,6 +180,8 @@ class UiState:
         )
         self.default_goal = default_goal or ""
         self.default_auto_commit = manager.settings.auto_commit
+        self._history_lock = threading.Lock()
+        self._history_cache: dict[str, tuple[object, list[dict[str, Any]]]] = {}
         if default_create_pr is not None:
             self.default_create_pr = bool(default_create_pr)
         else:
@@ -279,6 +281,19 @@ class UiState:
 
     def load_history(self, workspace_root: Path) -> list[dict[str, Any]]:
         """Load cycle logs from `.loco/runs/` and history.json, newest first."""
+        root = Path(workspace_root).expanduser().resolve()
+        key = str(root)
+        fingerprint = _history_fingerprint(root)
+        with self._history_lock:
+            cached = self._history_cache.get(key)
+            if cached is not None and cached[0] == fingerprint:
+                return cached[1]
+            items = [public_run_item(item) for item in self._read_history(root)]
+            self._history_cache[key] = (fingerprint, items)
+            return items
+
+    def _read_history(self, workspace_root: Path) -> list[dict[str, Any]]:
+        """Read run files and history.json without caching or slimming."""
         runs_dir = Path(workspace_root) / ".loco" / "runs"
         results: list[dict[str, Any]] = []
 
@@ -384,6 +399,30 @@ class UiState:
 _CONSOLE_SNIPPET = 400
 
 
+def _history_fingerprint(
+    root: Path,
+) -> tuple[tuple[tuple[str, int, int], ...], tuple[int, int]]:
+    """Cheap mtime/size signature so history polls can reuse a parsed cache."""
+    runs_dir = root / ".loco" / "runs"
+    entries: list[tuple[str, int, int]] = []
+    if runs_dir.is_dir():
+        for path in sorted(runs_dir.glob("*.json")):
+            try:
+                stat = path.stat()
+            except OSError:
+                continue
+            entries.append((path.name, stat.st_mtime_ns, stat.st_size))
+    history_file = root / "history.json"
+    hist = (0, 0)
+    try:
+        if history_file.exists():
+            stat = history_file.stat()
+            hist = (stat.st_mtime_ns, stat.st_size)
+    except OSError:
+        pass
+    return (tuple(entries), hist)
+
+
 def _live_task(manager: TaskManager) -> Task | None:
     """Newest running or queued task, else the newest task."""
     tasks = manager.list()
@@ -392,26 +431,16 @@ def _live_task(manager: TaskManager) -> Task | None:
 
 
 def _console_snippet(text: object, limit: int = _CONSOLE_SNIPPET) -> str:
-    value = " ".join(str(text or "").split())
-    if len(value) <= limit:
-        return value
-    return value[: limit - 1] + "…"
+    return clip_text(text, limit)
 
 
 def _agent_model_snippets(event: dict[str, Any]) -> tuple[str, str]:
     """Last non-assistant prompt and the model reply, clipped for the live console."""
-    agent = ""
-    messages = event.get("messages")
-    if isinstance(messages, list):
-        for message in reversed(messages):
-            if not isinstance(message, dict):
-                continue
-            if message.get("role") == "assistant":
-                continue
-            agent = _console_snippet(message.get("content"))
-            if agent:
-                break
-    return agent, _console_snippet(event.get("response"))
+    agent = str(event.get("agent") or "")
+    model = str(event.get("model") or "")
+    if agent or model:
+        return agent, model or _console_snippet(event.get("response"))
+    return llm_turn_snippets(event.get("messages"), event.get("response"))
 
 
 def _console_event_payload(event: dict[str, Any]) -> dict[str, Any]:
@@ -723,16 +752,16 @@ def create_app(
         page_size: int | None = None,
     ) -> Any:
         ui: UiState = request.app.state.ui
-        tasks = [task.to_dict() for task in ui.manager.list()]
+        tasks = ui.manager.list()
         if page is None and page_size is None:
-            return tasks
+            return [task.to_dict() for task in tasks]
         size = max(1, min(page_size or 10, 100))
         total = len(tasks)
         total_pages = max(1, math.ceil(total / size) if size else 1)
         current = max(1, min(page or 1, total_pages))
         start = (current - 1) * size
         return {
-            "items": tasks[start : start + size],
+            "items": [task.to_dict() for task in tasks[start : start + size]],
             "page": current,
             "page_size": size,
             "total": total,
