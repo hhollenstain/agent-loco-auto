@@ -125,9 +125,7 @@ def test_repeated_str_replace_failure_injects_recovery_nudge(
     assert result.tool_calls >= 2  # At least two str_replace attempts
 
 
-def test_third_consecutive_failure_auto_reads_file(
-    tmp_path: Path, settings: Settings
-) -> None:
+def test_third_consecutive_failure_auto_reads_file(tmp_path: Path, settings: Settings) -> None:
     """Three failed str_replace on app.py; a read_file of app.py is executed by the loop."""
 
     # Create a small file

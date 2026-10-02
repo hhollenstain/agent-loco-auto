@@ -35,9 +35,7 @@ def test_extract_pr_url_from_gh_output() -> None:
     assert extract_pr_url(None) is None
     assert extract_pr_url("no link here") is None
     assert (
-        extract_pr_url(
-            "Creating pull request\nhttps://github.com/acme/repo/pull/12\n"
-        )
+        extract_pr_url("Creating pull request\nhttps://github.com/acme/repo/pull/12\n")
         == "https://github.com/acme/repo/pull/12"
     )
     assert extract_pr_url("https://example.test/pull/1") == "https://example.test/pull/1"
@@ -165,9 +163,7 @@ def test_existing_pull_request_missing_gh_is_none(tmp_path: Path, monkeypatch) -
     assert existing_pull_request(Workspace(tmp_path)) is None
 
 
-def test_create_pull_request_treats_already_exists_as_success(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_create_pull_request_treats_already_exists_as_success(tmp_path: Path, monkeypatch) -> None:
     (tmp_path / "readme.txt").write_text("hello\n", encoding="utf-8")
     init_git_repo(tmp_path)
     workspace = Workspace(tmp_path)
@@ -448,4 +444,3 @@ def test_resume_workspace_checks_out_feature_branch(tmp_path: Path) -> None:
     result = resume_workspace(workspace, branch="loco/feature")
     assert result.ok
     assert current_branch(workspace) == "loco/feature"
-

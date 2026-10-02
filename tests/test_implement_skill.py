@@ -1,4 +1,5 @@
 """Tests for the bundled implement skill."""
+
 from pathlib import Path
 
 import yaml
@@ -60,11 +61,7 @@ def test_init_does_not_overwrite_existing_enabled_list(tmp_path: Path) -> None:
     loco_dir.mkdir()
     config_path = loco_dir / "config.yaml"
     config_path.write_text(
-        "name: test\n"
-        "test_command: pytest\n"
-        "skills:\n"
-        "  enabled:\n"
-        "    - tdd\n",
+        "name: test\ntest_command: pytest\nskills:\n  enabled:\n    - tdd\n",
         encoding="utf-8",
     )
 

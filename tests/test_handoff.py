@@ -35,10 +35,7 @@ index 789..012 100644
         assert len(result) <= 4000
 
     def test_compact_handoff_limits_changed_paths_to_20(self):
-        lines = "\n".join(
-            f"diff --git a/file{i}.py b/file{i}.py"
-            for i in range(30)
-        )
+        lines = "\n".join(f"diff --git a/file{i}.py b/file{i}.py" for i in range(30))
         result = compact_handoff(
             goal="test",
             summary="done",

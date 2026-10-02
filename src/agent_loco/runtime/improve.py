@@ -444,9 +444,7 @@ def _run_cycle(
     if sha_before and sha and sha != sha_before:
         committed = True
 
-    screenshot_files = (
-        _pr_screenshot_files(workspace) if allow_create_pr else []
-    )
+    screenshot_files = _pr_screenshot_files(workspace) if allow_create_pr else []
     will_commit = settings.auto_commit and has_changes(workspace)
     if allow_create_pr and (committed or will_commit):
         log_progress("Moving work onto a pull-request branch...")
@@ -597,11 +595,7 @@ def _publish_pull_request(
                 tests_passed=tests_passed,
                 commit_sha=sha,
                 branch=branch or "",
-                screenshots=[
-                    path.name
-                    for path in screenshot_files
-                    if is_tracked(workspace, path)
-                ],
+                screenshots=[path.name for path in screenshot_files if is_tracked(workspace, path)],
                 image_base=_pr_image_base(
                     workspace,
                     sha,
@@ -613,8 +607,7 @@ def _publish_pull_request(
             log_progress(f"Updated pull request {existing}")
         else:
             log_progress(
-                "Pushed the branch; pull request text was not refreshed: "
-                f"{updated.output}"
+                f"Pushed the branch; pull request text was not refreshed: {updated.output}"
             )
         record_event(kind="pr", url=existing, message=updated.output or "existing pull request")
         return True, existing, None
@@ -628,11 +621,7 @@ def _publish_pull_request(
             tests_passed=tests_passed,
             commit_sha=sha,
             branch=branch or "",
-            screenshots=[
-                path.name
-                for path in screenshot_files
-                if is_tracked(workspace, path)
-            ],
+            screenshots=[path.name for path in screenshot_files if is_tracked(workspace, path)],
             image_base=_pr_image_base(
                 workspace,
                 sha,
@@ -709,9 +698,7 @@ def _handle_empty_diff(
                 screenshot_files=[],
             )
             if failed is not None:
-                return _EmptyDiffOutcome(
-                    result=failed, summary=summary, tests_passed=tests_passed
-                )
+                return _EmptyDiffOutcome(result=failed, summary=summary, tests_passed=tests_passed)
         if verdict.met or published:
             log_progress(f"No work needed: {review_reason(verdict)}")
             if mark_checkbox:
@@ -1041,9 +1028,7 @@ def _ensure_goal_met(
             if not extra_granted and attempts >= project.max_repair_attempts:
                 extra_granted = True
                 limit = attempts + GOAL_RETRY_STALL_EXTRA
-                log_progress(
-                    "Retry made no file changes; continuing instead of giving up."
-                )
+                log_progress("Retry made no file changes; continuing instead of giving up.")
         else:
             stalls = 0
         last_diff = work_diff

@@ -44,7 +44,7 @@ def test_format_ui_evidence_lists_errors_and_tiny_controls() -> None:
             title="loco",
             page_errors=["label is not defined"],
             smashed=["Init (0x0)"],
-            dead_controls=["[data-task-pane=\"screenshots\"] did not show the screenshots pane"],
+            dead_controls=['[data-task-pane="screenshots"] did not show the screenshots pane'],
             snapshot="button: Queue task (120x32)",
             interactive=False,
         )
@@ -200,14 +200,9 @@ def test_from_eval_marks_overlapping_rerun_and_line_stats() -> None:
 
 def test_classify_network_failure_ignores_favicon_and_screenshots() -> None:
     assert classify_network_failure("http://127.0.0.1:9/favicon.ico", 404) == "ignore"
+    assert classify_network_failure("http://127.0.0.1:9/apple-touch-icon.png", 404) == "ignore"
     assert (
-        classify_network_failure("http://127.0.0.1:9/apple-touch-icon.png", 404)
-        == "ignore"
-    )
-    assert (
-        classify_network_failure(
-            "http://127.0.0.1:9/api/ui-screenshot?name=ui-review.png", 404
-        )
+        classify_network_failure("http://127.0.0.1:9/api/ui-screenshot?name=ui-review.png", 404)
         == "note"
     )
     assert classify_network_failure("http://127.0.0.1:9/static/app.js", 404) == "block"
@@ -255,9 +250,7 @@ def test_review_goal_includes_rendered_ui_section() -> None:
     assert "label is not defined" in user
 
 
-def test_review_goal_overrides_met_when_rendered_ui_throws(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_review_goal_overrides_met_when_rendered_ui_throws(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
         "agent_loco.runtime.improve.collect_ui_evidence",
         lambda *args, **kwargs: UiEvidence(
@@ -268,9 +261,7 @@ def test_review_goal_overrides_met_when_rendered_ui_throws(
     )
     (tmp_path / ".loco").mkdir()
     (tmp_path / ".loco" / "config.yaml").write_text("name: fixture\n", encoding="utf-8")
-    llm = ScriptedClient(
-        [AssistantTurn(text='{"met": true, "reason": "css layout looks fine"}')]
-    )
+    llm = ScriptedClient([AssistantTurn(text='{"met": true, "reason": "css layout looks fine"}')])
     token = bind_progress()
     try:
         verdict = _review_goal(
@@ -354,16 +345,12 @@ def test_review_goal_overrides_met_when_required_script_is_missing(
     assert "app.js" in verdict.reason
 
 
-def test_review_goal_overrides_met_when_screenshot_tab_is_dead(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_review_goal_overrides_met_when_screenshot_tab_is_dead(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
         "agent_loco.runtime.improve.collect_ui_evidence",
         lambda *args, **kwargs: UiEvidence(
             ok=False,
-            dead_controls=[
-                '[data-task-pane="screenshots"] did not show the screenshots pane'
-            ],
+            dead_controls=['[data-task-pane="screenshots"] did not show the screenshots pane'],
         ),
     )
     (tmp_path / ".loco").mkdir()
@@ -599,15 +586,9 @@ def test_loco_review_clicks_include_main_and_task_tabs(tmp_path: Path) -> None:
     assert '[data-main-pane="current"]' in clicks
     assert '[data-task-pane="screenshots"]' in clicks
     assert '[data-task-pane="progress"]' in clicks
-    assert clicks.index('[data-main-pane="history"]') < clicks.index(
-        "#open-history-picker"
-    )
-    assert clicks.index("#open-history-picker") < clicks.index(
-        "#history-list button.task"
-    )
-    assert clicks.index("#history-list button.task") < clicks.index(
-        '[data-task-pane="changes"]'
-    )
+    assert clicks.index('[data-main-pane="history"]') < clicks.index("#open-history-picker")
+    assert clicks.index("#open-history-picker") < clicks.index("#history-list button.task")
+    assert clicks.index("#history-list button.task") < clicks.index('[data-task-pane="changes"]')
     assert clicks.index('[data-task-pane="screenshots"]') < clicks.index(
         '[data-main-pane="current"]'
     )
@@ -819,10 +800,7 @@ def test_pr_body_embeds_hosted_screenshot_urls() -> None:
         "![ui-review_goal.png](https://github.com/acme/repo/raw/abc/"
         ".loco/ui-screenshots/ui-review_goal.png)"
     ) in body
-    assert (
-        "![ui-review.png](https://github.com/acme/repo/raw/abc/.loco/ui-review.png)"
-        in body
-    )
+    assert "![ui-review.png](https://github.com/acme/repo/raw/abc/.loco/ui-review.png)" in body
     assert "](.loco/ui-screenshots/" not in body
 
 

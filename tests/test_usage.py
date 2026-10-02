@@ -73,16 +73,19 @@ def test_task_dict_and_history_include_token_fields(
     settings: Settings,
     tmp_path: Path,
 ) -> None:
-    manager = TaskManager(settings, runner=lambda task: CycleResult(
-        status="success",
-        goal=task.goal,
-        summary="done",
-        tests_passed=True,
-        committed=False,
-        published=False,
-        commit_sha=None,
-        reason="ok",
-    ))
+    manager = TaskManager(
+        settings,
+        runner=lambda task: CycleResult(
+            status="success",
+            goal=task.goal,
+            summary="done",
+            tests_passed=True,
+            committed=False,
+            published=False,
+            commit_sha=None,
+            reason="ok",
+        ),
+    )
     try:
         task = manager.submit(tmp_path, "count tokens")
         task.events.append(

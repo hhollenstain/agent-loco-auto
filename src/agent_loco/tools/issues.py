@@ -25,9 +25,7 @@ def issues_tools(workspace: Workspace) -> list[ToolSpec]:
         search_query=None,
         author=None,
     ):
-        return _list_issues(
-            workspace, repo, limit, include_closed, search_query, author
-        )
+        return _list_issues(workspace, repo, limit, include_closed, search_query, author)
 
     def pull_goals(
         repo=None,
@@ -210,6 +208,7 @@ def _list_issues(
 
     if not repo:
         from agent_loco.tools.git import github_owner_repo
+
         repo_tuple = github_owner_repo(workspace)
         if repo_tuple:
             repo = f"{repo_tuple[0]}/{repo_tuple[1]}"
@@ -344,14 +343,23 @@ def _parse_issue_url(
     gl_issue_match = _GITLAB_ISSUE_RE.search(url)
 
     if gh_match:
-        return ToolResult(True, f"GitHub Issue #{gh_match.group('num')} "
-                   f"in {gh_match.group('owner')}/{gh_match.group('repo')}")
+        return ToolResult(
+            True,
+            f"GitHub Issue #{gh_match.group('num')} "
+            f"in {gh_match.group('owner')}/{gh_match.group('repo')}",
+        )
     elif gl_mr_match:
-        return ToolResult(True, f"GitLab MR #{gl_mr_match.group('num')} "
-                   f"in {gl_mr_match.group('owner')}/{gl_mr_match.group('repo')}")
+        return ToolResult(
+            True,
+            f"GitLab MR #{gl_mr_match.group('num')} "
+            f"in {gl_mr_match.group('owner')}/{gl_mr_match.group('repo')}",
+        )
     elif gl_issue_match:
-        return ToolResult(True, f"GitLab Issue #{gl_issue_match.group('num')} "
-                   f"in {gl_issue_match.group('owner')}/{gl_issue_match.group('repo')}")
+        return ToolResult(
+            True,
+            f"GitLab Issue #{gl_issue_match.group('num')} "
+            f"in {gl_issue_match.group('owner')}/{gl_issue_match.group('repo')}",
+        )
 
     return ToolResult(False, "Not a valid GitHub/GitLab issue or MR URL")
 
@@ -369,6 +377,7 @@ def _pull_goals_from_issues(
 
     if not repo:
         from agent_loco.tools.git import github_owner_repo
+
         repo_tuple = github_owner_repo(workspace)
         if repo_tuple:
             repo = f"{repo_tuple[0]}/{repo_tuple[1]}"
@@ -400,9 +409,11 @@ def _pull_goals_from_issues(
     lines.append("")
 
     for i, issue in enumerate(issues, start=1):
-        if prefix and prefix.lower() not in " ".join(
-            str(label) for label in issue.get("labels") or []
-        ).lower():
+        if (
+            prefix
+            and prefix.lower()
+            not in " ".join(str(label) for label in issue.get("labels") or []).lower()
+        ):
             continue
 
         goal_text = (issue.get("goal") or "").strip()
@@ -442,6 +453,7 @@ def _pull_goals_from_issues(
     if is_protected_branch(branch):
         # Create a new branch for this work
         from datetime import UTC, datetime
+
         slug = branch if branch else "goals"
         new_branch = f"loco/{slug}-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}"
         create_branch = run_git(workspace, ["checkout", "-b", new_branch])
@@ -454,11 +466,16 @@ def _pull_goals_from_issues(
     if stage.returncode != 0:
         return ToolResult(False, f"Failed to stage goals.md: {_output(stage)}")
 
-    commit = run_git(workspace, [
-        "commit",
-        "-m", f"Updated goals.md with issues from {repo}: {status_filter} issues",
-        "--author", "agent-loco <agent-loco@users.noreply.github.com>",
-    ])
+    commit = run_git(
+        workspace,
+        [
+            "commit",
+            "-m",
+            f"Updated goals.md with issues from {repo}: {status_filter} issues",
+            "--author",
+            "agent-loco <agent-loco@users.noreply.github.com>",
+        ],
+    )
     if commit.returncode != 0:
         return ToolResult(False, f"Failed to commit: {_output(commit)}")
 
@@ -469,6 +486,3 @@ def _pull_goals_from_issues(
             return ToolResult(False, f"Failed to push: {_output(push)}")
 
     return ToolResult(True, "\n".join(lines) + "\n\nGoals updated and pushed to current branch.")
-
-
-

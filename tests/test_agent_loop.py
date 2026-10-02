@@ -398,9 +398,7 @@ def test_agent_str_replace_counts_as_mutation(tmp_path: Path, monkeypatch) -> No
     result = CodingAgent(llm, tools, max_iterations=5).run("Add stages")
     assert result.stopped_reason == "completed"
     assert result.tool_calls == 2
-    assert "<main class='stages'></main>" in (tmp_path / "ui.html").read_text(
-        encoding="utf-8"
-    )
+    assert "<main class='stages'></main>" in (tmp_path / "ui.html").read_text(encoding="utf-8")
     contents = [
         message["content"]
         for message in llm.calls[-1]
@@ -447,9 +445,7 @@ def test_agent_accepts_qwen_xml_str_replace(tmp_path: Path, monkeypatch) -> None
     )
     result = CodingAgent(llm, tools, max_iterations=5).run("Add stages")
     assert result.tool_calls == 2
-    assert "<main class='stages'></main>" in (tmp_path / "ui.html").read_text(
-        encoding="utf-8"
-    )
+    assert "<main class='stages'></main>" in (tmp_path / "ui.html").read_text(encoding="utf-8")
 
 
 def test_agent_require_change_keeps_going_until_edit(tmp_path: Path) -> None:
@@ -636,9 +632,7 @@ def test_agent_requires_run_tests_after_readme_edit(tmp_path: Path) -> None:
     assert any("run_tests" in content for content in contents)
 
 
-def test_agent_verifies_ui_itself_when_it_hits_the_turn_cap(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_agent_verifies_ui_itself_when_it_hits_the_turn_cap(tmp_path: Path, monkeypatch) -> None:
     workspace = Workspace(tmp_path)
     (tmp_path / ".loco").mkdir()
     (tmp_path / ".loco" / "config.yaml").write_text("name: fixture\n", encoding="utf-8")

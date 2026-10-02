@@ -123,11 +123,7 @@ def half_baked_diff_markers(diff: str | None) -> list[str]:
         if line.startswith("+++ "):
             untracked_body = True
             continue
-        if (
-            line.startswith("diff --git ")
-            or line.startswith("@@")
-            or line.startswith("--- ")
-        ):
+        if line.startswith("diff --git ") or line.startswith("@@") or line.startswith("--- "):
             untracked_body = False
             continue
         added = False
@@ -190,11 +186,7 @@ def unwired_ui_markers(diff: str | None) -> list[str]:
                 current = current[2:]
             untracked_body = True
             continue
-        if (
-            line.startswith("diff --git ")
-            or line.startswith("@@")
-            or line.startswith("--- ")
-        ):
+        if line.startswith("diff --git ") or line.startswith("@@") or line.startswith("--- "):
             untracked_body = False
             continue
         added = False
@@ -313,9 +305,7 @@ _DOCKER_SUBCOMMANDS = frozenset(
         "wait",
     }
 )
-_LOCO_SUBCOMMANDS = frozenset(
-    {"clone", "doctor", "init", "run", "ui", "watch"}
-)
+_LOCO_SUBCOMMANDS = frozenset({"clone", "doctor", "init", "run", "ui", "watch"})
 _DOC_SUFFIXES = (".md", ".rst", ".adoc", ".txt")
 _OPS_NAMES = (
     "dockerfile",
@@ -333,9 +323,7 @@ _LINE_LOCO_RE = re.compile(
     re.IGNORECASE,
 )
 _DOCKER_CLONE_RE = re.compile(r"\bdocker(?:-compose)?\s+clone\b", re.IGNORECASE)
-_LOCO_OVERLAY_RE = re.compile(
-    r"(?:\./)?\.loco\s*:\s*/workspaces/\.loco"
-)
+_LOCO_OVERLAY_RE = re.compile(r"(?:\./)?\.loco\s*:\s*/workspaces/\.loco")
 
 
 def _added_diff_lines(diff: str | None) -> list[tuple[str, str]]:
@@ -350,11 +338,7 @@ def _added_diff_lines(diff: str | None) -> list[tuple[str, str]]:
                 current = current[2:]
             untracked_body = True
             continue
-        if (
-            line.startswith("diff --git ")
-            or line.startswith("@@")
-            or line.startswith("--- ")
-        ):
+        if line.startswith("diff --git ") or line.startswith("@@") or line.startswith("--- "):
             untracked_body = False
             continue
         added = False
@@ -406,9 +390,7 @@ def invalid_doc_commands(diff: str | None) -> list[str]:
 
 _PY_DEF_RE = re.compile(r"^\s*(?:async\s+)?def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 _PY_CLASS_RE = re.compile(r"^\s*class\s+([A-Za-z_][A-Za-z0-9_]*)\s*[:(]")
-_JS_FN_RE = re.compile(
-    r"^\s*(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\("
-)
+_JS_FN_RE = re.compile(r"^\s*(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(")
 _JS_CONST_FN_RE = re.compile(
     r"^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"
     r"(?:async\s+)?(?:function\b|\()"

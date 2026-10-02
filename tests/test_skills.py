@@ -56,7 +56,7 @@ def test_render_skill_html_formats_markdown() -> None:
     assert "<code>run_tests</code>" in html
     escaped = render_skill_html("<script>alert(1)</script>\n[xss](javascript:alert(1))\n")
     assert "<script>" not in escaped
-    assert "href=\"javascript:" not in escaped
+    assert 'href="javascript:' not in escaped
     assert "&lt;script&gt;" in escaped
     assert render_skill_html("   ") == ""
 

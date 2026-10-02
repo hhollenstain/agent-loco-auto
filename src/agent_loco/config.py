@@ -46,9 +46,7 @@ class Settings(BaseSettings):
             ("LOCO_MODEL_BASE_URL", self.model_base_url),
         ]
 
-        missing = [
-            name for name, value in required_vars if not value
-        ]
+        missing = [name for name, value in required_vars if not value]
 
         if missing:
             raise ValueError(

@@ -16,8 +16,7 @@ from agent_loco.tools.base import ToolResult, ToolSpec, object_schema
 SEARCH_ENDPOINT = "https://html.duckduckgo.com/html/"
 INSTANT_ENDPOINT = "https://api.duckduckgo.com/"
 USER_AGENT = (
-    "Mozilla/5.0 (compatible; agent-loco/0.1.0; "
-    "+https://github.com/hhollenstain/agent-loco)"
+    "Mozilla/5.0 (compatible; agent-loco/0.1.0; +https://github.com/hhollenstain/agent-loco)"
 )
 HEADERS = {
     "User-Agent": USER_AGENT,
@@ -122,9 +121,7 @@ def web_tools(_workspace: Workspace) -> list[ToolSpec]:
                     },
                     "max_chars": {
                         "type": "integer",
-                        "description": (
-                            "Maximum characters of text to return. Default 20000."
-                        ),
+                        "description": ("Maximum characters of text to return. Default 20000."),
                     },
                 },
                 ["url"],
@@ -154,8 +151,7 @@ def web_search(query: str, max_results: int = DEFAULT_SEARCH_RESULTS) -> ToolRes
         detail = f" ({'; '.join(errors)})" if errors else ""
         return ToolResult(
             False,
-            "No web results. Try a more specific query or fetch_url on a known "
-            f"docs URL.{detail}",
+            f"No web results. Try a more specific query or fetch_url on a known docs URL.{detail}",
         )
     return ToolResult(True, _format_search_results(results))
 

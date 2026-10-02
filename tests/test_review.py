@@ -26,12 +26,7 @@ def test_half_baked_diff_markers_catch_stubs_and_mocks() -> None:
     assert any("generate_mock_issues" in item for item in markers)
     assert any("real implementation" in item for item in markers)
     assert any("NotImplementedError" in item for item in markers)
-    untracked = (
-        "--- /dev/null\n"
-        "+++ b/issues.py\n"
-        "def generate_mock_issues():\n"
-        "    return []\n"
-    )
+    untracked = "--- /dev/null\n+++ b/issues.py\ndef generate_mock_issues():\n    return []\n"
     assert any("generate_mock_issues" in item for item in half_baked_diff_markers(untracked))
     removed = (
         "diff --git a/app.py b/app.py\n"
@@ -120,9 +115,7 @@ def test_review_goal_retries_when_first_reply_is_prose() -> None:
 def test_review_goal_existing_tree_uses_workspace_evidence() -> None:
     llm = ScriptedClient(
         [
-            AssistantTurn(
-                text='{"met": true, "reason": "discord.py is already 2.7.1"}'
-            ),
+            AssistantTurn(text='{"met": true, "reason": "discord.py is already 2.7.1"}'),
         ]
     )
     token = bind_progress()
@@ -152,8 +145,8 @@ def test_unwired_ui_markers_catch_dead_buttons_and_routes() -> None:
         "diff --git a/src/agent_loco/templates/index.html b/src/agent_loco/templates/index.html\n"
         "--- a/src/agent_loco/templates/index.html\n"
         "+++ b/src/agent_loco/templates/index.html\n"
-        "+            ? `<button type=\"button\" class=\"rerun-btn\" "
-        "data-id=\"${task.id}\">↻ Rerun</button>`\n"
+        '+            ? `<button type="button" class="rerun-btn" '
+        'data-id="${task.id}">↻ Rerun</button>`\n'
         "diff --git a/src/agent_loco/web_ui.py b/src/agent_loco/web_ui.py\n"
         "--- a/src/agent_loco/web_ui.py\n"
         "+++ b/src/agent_loco/web_ui.py\n"
@@ -169,10 +162,10 @@ def test_unwired_ui_markers_catch_dead_buttons_and_routes() -> None:
         "diff --git a/src/agent_loco/templates/index.html b/src/agent_loco/templates/index.html\n"
         "--- a/src/agent_loco/templates/index.html\n"
         "+++ b/src/agent_loco/templates/index.html\n"
-        "+            ? `<button type=\"button\" class=\"rerun-btn\" "
-        "data-rerun-id=\"${task.id}\">↻ Rerun</button>`\n"
-        "+      const rerun = event.target.closest(\".rerun-btn\");\n"
-        "+        const res = await fetch(`/api/tasks/${taskId}/rerun`, { method: \"POST\" });\n"
+        '+            ? `<button type="button" class="rerun-btn" '
+        'data-rerun-id="${task.id}">↻ Rerun</button>`\n'
+        '+      const rerun = event.target.closest(".rerun-btn");\n'
+        '+        const res = await fetch(`/api/tasks/${taskId}/rerun`, { method: "POST" });\n'
         "diff --git a/src/agent_loco/web_ui.py b/src/agent_loco/web_ui.py\n"
         "--- a/src/agent_loco/web_ui.py\n"
         "+++ b/src/agent_loco/web_ui.py\n"
@@ -259,11 +252,10 @@ def test_unused_new_symbols_catch_helpers_nothing_calls() -> None:
     assert any("list_for_workspace" in item for item in unused_new_symbols(helper_only))
 
     cluster = (
-        helper_only
-        + "+\n"
+        helper_only + "+\n"
         "+    def has_running_task(self, workspace_id: str) -> bool:\n"
         "+        return any(\n"
-        "+            task.status == \"running\"\n"
+        '+            task.status == "running"\n'
         "+            for task in self.list_for_workspace(workspace_id)\n"
         "+        )\n"
     )
@@ -271,8 +263,7 @@ def test_unused_new_symbols_catch_helpers_nothing_calls() -> None:
     assert any("has_running_task" in item for item in markers)
 
     wired = (
-        helper_only
-        + "diff --git a/src/agent_loco/web_ui.py b/src/agent_loco/web_ui.py\n"
+        helper_only + "diff --git a/src/agent_loco/web_ui.py b/src/agent_loco/web_ui.py\n"
         "--- a/src/agent_loco/web_ui.py\n"
         "+++ b/src/agent_loco/web_ui.py\n"
         '+    @app.get("/api/tasks")\n'

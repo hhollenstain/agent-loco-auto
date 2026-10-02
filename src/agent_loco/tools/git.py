@@ -12,9 +12,7 @@ from agent_loco.tools.base import ToolResult, ToolSpec, object_schema
 from agent_loco.tools.files import is_probably_secret_path
 
 SECRET_REFUSAL = "refusing to commit likely secrets: {paths}"
-PROTECTED_COMMIT_REFUSAL = (
-    "refusing to commit on {branch}; the cycle commits after review passes"
-)
+PROTECTED_COMMIT_REFUSAL = "refusing to commit on {branch}; the cycle commits after review passes"
 PROTECTED_BRANCHES = frozenset({"main", "master", "trunk"})
 LOCO_COAUTHOR_NAME = "agent-loco"
 LOCO_COAUTHOR_EMAIL = "agent-loco@users.noreply.github.com"
@@ -351,9 +349,7 @@ def is_protected_branch(name: str | None) -> bool:
 def branch_exists(workspace: Workspace, name: str) -> bool:
     if not name:
         return False
-    result = run_git(
-        workspace, ["show-ref", "--verify", "--quiet", f"refs/heads/{name}"]
-    )
+    result = run_git(workspace, ["show-ref", "--verify", "--quiet", f"refs/heads/{name}"])
     return result.returncode == 0
 
 
@@ -404,7 +400,7 @@ def _branch_slug(goal: str) -> str:
 
     first = goal_headline(goal)
     slug = re.sub(r"[^a-z0-9]+", "-", first.lower()).strip("-")
-    return (slug[:40].strip("-") or "change")
+    return slug[:40].strip("-") or "change"
 
 
 def ensure_pr_branch(
@@ -458,10 +454,7 @@ def upstream_state(workspace: Workspace, remote: str = "origin") -> UpstreamStat
             f"(pushed; {behind} remote commit(s) not in HEAD)."
         )
     elif behind == 0:
-        detail = (
-            f"HEAD is on {branch}, {ahead} local commit(s) ahead of {tracking} "
-            "(not pushed)."
-        )
+        detail = f"HEAD is on {branch}, {ahead} local commit(s) ahead of {tracking} (not pushed)."
     else:
         detail = (
             f"HEAD is on {branch}, diverged from {tracking} "
@@ -678,9 +671,7 @@ def _unstage_runtime_artifacts(workspace: Workspace) -> None:
     result = run_git(workspace, ["diff", "--cached", "--name-only", "-z"])
     if result.returncode != 0 or not result.stdout:
         return
-    runtime = [
-        path for path in result.stdout.split("\0") if path and is_runtime_artifact(path)
-    ]
+    runtime = [path for path in result.stdout.split("\0") if path and is_runtime_artifact(path)]
     if runtime:
         run_git(workspace, ["reset", "HEAD", "--", *runtime])
 

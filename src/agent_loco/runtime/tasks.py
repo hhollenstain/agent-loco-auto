@@ -169,9 +169,7 @@ class TaskManager:
         selected_url = normalize_model_base_url(
             (model_base_url or "").strip() or self.settings.model_base_url
         )
-        selected_key = (
-            model_api_key if model_api_key is not None else self.settings.model_api_key
-        )
+        selected_key = model_api_key if model_api_key is not None else self.settings.model_api_key
         task = Task(
             id=uuid4().hex,
             workspace=str(workspace),

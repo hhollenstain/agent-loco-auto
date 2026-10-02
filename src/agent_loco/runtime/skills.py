@@ -285,9 +285,7 @@ def _discover(
                 text = path.read_text(encoding="utf-8")
             except OSError:
                 continue
-            name, description, body = parse_skill_markdown(
-                text, fallback_name=path.parent.name
-            )
+            name, description, body = parse_skill_markdown(text, fallback_name=path.parent.name)
             if not name:
                 continue
             found.append(

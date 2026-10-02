@@ -349,9 +349,7 @@ def _nearby_hint(before: str, needle: str) -> str:
     lines = before.splitlines()
     if token:
         hits = [
-            f"{index:>4}|{line}"
-            for index, line in enumerate(lines, start=1)
-            if token[:24] in line
+            f"{index:>4}|{line}" for index, line in enumerate(lines, start=1) if token[:24] in line
         ]
         if hits:
             return " Nearby lines:\n" + "\n".join(hits[:8])

@@ -13,9 +13,7 @@ class UtcFormatter(logging.Formatter):
     """UTC ISO-8601 timestamps on every loco log line."""
 
     def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
-        return datetime.fromtimestamp(record.created, tz=UTC).strftime(
-            datefmt or LOG_TIME_FORMAT
-        )
+        return datetime.fromtimestamp(record.created, tz=UTC).strftime(datefmt or LOG_TIME_FORMAT)
 
 
 def utcnow_iso() -> str:

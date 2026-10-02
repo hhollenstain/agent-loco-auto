@@ -337,9 +337,7 @@ def start_preview(
         return _start_command_preview(workspace, str(command), host_port)
     # Never serve agent-loco Jinja templates as static HTML. That captures
     # `{{ ws.name }}` and 404s /static CSS instead of the running app.
-    if _is_loco_project(workspace.root) and (
-        not path or _is_loco_template_path(workspace, path)
-    ):
+    if _is_loco_project(workspace.root) and (not path or _is_loco_template_path(workspace, path)):
         return _start_loco_preview(workspace, host_port)
     if path:
         html_path = workspace.resolve(path)
@@ -361,9 +359,7 @@ def capture_page(
 ) -> UiEvidence:
     selectors = [item for item in [click, *(clicks or [])] if item]
     try:
-        return _playwright_capture(
-            url, clicks=selectors, screenshot=screenshot, wait_ms=wait_ms
-        )
+        return _playwright_capture(url, clicks=selectors, screenshot=screenshot, wait_ms=wait_ms)
     except Exception as exc:
         log.info("playwright UI capture unavailable: %s", exc)
     try:
@@ -560,9 +556,7 @@ def _aria_controls_id(page: Any, selector: str) -> str | None:
     return text or None
 
 
-def _playwright_probe(
-    page: Any, clicks: list[str], wait_ms: int
-) -> tuple[list[str], list[str]]:
+def _playwright_probe(page: Any, clicks: list[str], wait_ms: int) -> tuple[list[str], list[str]]:
     clicked: list[str] = []
     dead: list[str] = []
     for selector in clicks:
@@ -799,10 +793,7 @@ def _format_snapshot(
         if not isinstance(item, dict):
             continue
         name = str(item.get("id") or "overlay").strip() or "overlay"
-        lines.append(
-            f"overlay: {name} hidden={item.get('hidden')} "
-            f"{item.get('w')}x{item.get('h')}"
-        )
+        lines.append(f"overlay: {name} hidden={item.get('hidden')} {item.get('w')}x{item.get('h')}")
     for item in elements:
         if not isinstance(item, dict):
             continue
@@ -837,10 +828,7 @@ def unverified_interactive_ui(goal: str, evidence: UiEvidence) -> str | None:
     clicked = " ".join(evidence.clicked).lower()
     if re.search(r"screenshot|screen shot", goal or "", re.I):
         if re.search(r"tab:.*screenshots", snapshot, re.I) and "screenshots" not in clicked:
-            return (
-                "Rendered UI never exercised the Screenshots tab; "
-                "the control was not clicked"
-            )
+            return "Rendered UI never exercised the Screenshots tab; the control was not clicked"
     if re.search(
         r"past run|current run|history tab|workspace views|own tabs?",
         goal or "",
@@ -855,18 +843,12 @@ def unverified_interactive_ui(goal: str, evidence: UiEvidence) -> str | None:
         r"skills-panel|open-skills", snapshot, re.I
     ):
         if "open-skills" not in clicked and "skills-panel" not in clicked:
-            return (
-                "Rendered UI never opened Skills; "
-                "the control was not clicked"
-            )
+            return "Rendered UI never opened Skills; the control was not clicked"
     if re.search(r"\bguidelines?\b|\brules?\b", goal or "", re.I) and re.search(
         r"guidelines-panel|open-guidelines", snapshot, re.I
     ):
         if "open-guidelines" not in clicked and "guidelines-panel" not in clicked:
-            return (
-                "Rendered UI never opened Rules; "
-                "the control was not clicked"
-            )
+            return "Rendered UI never opened Rules; the control was not clicked"
     if re.search(r"overlap|overlapping", goal or "", re.I):
         if evidence.smashed:
             return f"Rendered UI controls overlap or are unusable: {evidence.smashed[0]}"

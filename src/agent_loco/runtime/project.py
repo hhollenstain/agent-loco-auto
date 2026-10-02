@@ -54,9 +54,7 @@ def load_project(root: Path) -> ProjectConfig:
     else:
         lint_command = str(configured_lint)
     is_git = _is_git_repository(root)
-    publish_enabled = (
-        bool(publish["enabled"]) if "enabled" in publish else is_git
-    )
+    publish_enabled = bool(publish["enabled"]) if "enabled" in publish else is_git
     create_pr = bool(publish["create_pr"]) if "create_pr" in publish else is_git
     return ProjectConfig(
         name=str(raw.get("name") or root.name),
@@ -339,6 +337,7 @@ def collect_context(
     """
     if brief_context:
         from agent_loco.runtime.brief import build_task_brief
+
         return build_task_brief(root, project.goals_file, project)
     publish_on = project.publish_enabled if allow_publish is None else allow_publish
     parts = [

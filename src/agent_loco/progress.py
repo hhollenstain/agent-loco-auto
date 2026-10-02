@@ -16,12 +16,8 @@ MAX_TEST_OUTPUT_CHARS = 16_000
 LLM_SNIPPET = 400
 ProgressToken = Token[list[dict[str, Any]] | None]
 
-_events: ContextVar[list[dict[str, Any]] | None] = ContextVar(
-    "loco_progress_events", default=None
-)
-_originals: ContextVar[dict[str, str] | None] = ContextVar(
-    "loco_file_originals", default=None
-)
+_events: ContextVar[list[dict[str, Any]] | None] = ContextVar("loco_progress_events", default=None)
+_originals: ContextVar[dict[str, str] | None] = ContextVar("loco_file_originals", default=None)
 
 
 def current_events() -> list[dict[str, Any]]:

@@ -53,7 +53,7 @@ def test_extract_version_changes_from_pipfile_lock_hunk() -> None:
 
 
 def test_lockfile_summary_prioritizes_goal_package() -> None:
-    lines = ['diff --git a/Pipfile.lock b/Pipfile.lock']
+    lines = ["diff --git a/Pipfile.lock b/Pipfile.lock"]
     for name in ("alpha", "beta", "zzz-target"):
         lines.append(f'         "{name}": {{')
         lines.append('-            "version": "==1.0.0"')

@@ -260,9 +260,7 @@ class CodingAgent:
                                         self.tools, "read_file", {"path": path_to_read}
                                     )
                                     tool_calls += 1  # Count the recovery read_file call
-                                    log.info(
-                                        "tool read_file ok=%s (recovery)", read_result.ok
-                                    )
+                                    log.info("tool read_file ok=%s (recovery)", read_result.ok)
                                     messages.append(
                                         _tool_result_message(
                                             ToolCall(
@@ -287,21 +285,15 @@ class CodingAgent:
                                     failure_tracker.reset()
                                 continue
                         # Check for 2 failures of same tool on same path
-                        same_path_failures = failure_tracker.get_same_tool_failures(
-                            call.name, path
-                        )
+                        same_path_failures = failure_tracker.get_same_tool_failures(call.name, path)
                         if same_path_failures >= 2:
                             nudge_msg = RECOVERY_TWICE_NUDGE.format(
                                 name=call.name,
                                 message=(result.output or "")[:200],
                                 path=path or "the file",
                             )
-                            log.info(
-                                "injecting recovery nudge: tool %s failed twice", call.name
-                            )
-                            messages.append(
-                                {"role": "user", "content": _nudge(nudge_msg, goal)}
-                            )
+                            log.info("injecting recovery nudge: tool %s failed twice", call.name)
+                            messages.append({"role": "user", "content": _nudge(nudge_msg, goal)})
                     else:
                         # Success resets failure counter
                         failure_tracker.reset()
@@ -334,9 +326,7 @@ class CodingAgent:
                 continue
 
             if not mutated:
-                nudge_limit = (
-                    MAX_REQUIRE_CHANGE_NUDGES if require_change else MAX_PLAN_NUDGES
-                )
+                nudge_limit = MAX_REQUIRE_CHANGE_NUDGES if require_change else MAX_PLAN_NUDGES
                 if plan_nudges < nudge_limit:
                     plan_nudges += 1
                     log.info("nudging agent to keep working after a plan-only turn")
@@ -415,10 +405,7 @@ class CodingAgent:
 
 
 def _nudge(template: str, goal: str) -> str:
-    return (
-        f"{template}\n\nGoal:\n{goal.strip()}\n\n"
-        "Only edit files that implement that goal."
-    )
+    return f"{template}\n\nGoal:\n{goal.strip()}\n\nOnly edit files that implement that goal."
 
 
 def _assistant_tool_message(turn: AssistantTurn) -> dict:

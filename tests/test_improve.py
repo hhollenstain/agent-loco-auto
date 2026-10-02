@@ -156,9 +156,7 @@ def test_cycle_skips_commit_when_lint_fails(tmp_path: Path, settings: Settings) 
     assert any("F401" in (event.get("output") or "") for event in lint_events)
 
 
-def test_cycle_skips_before_tests_when_a_goal_is_given(
-    tmp_path: Path, settings: Settings
-) -> None:
+def test_cycle_skips_before_tests_when_a_goal_is_given(tmp_path: Path, settings: Settings) -> None:
     _broken_project(tmp_path)
     llm = ScriptedClient([AssistantTurn(text="I looked around and stopped.")])
     result = run_cycle(tmp_path, settings, llm, goal="Make the adder work")
@@ -288,16 +286,13 @@ def test_cycle_retries_when_agent_inspects_but_goal_is_unmet(
     assert result.committed is True
 
 
-def test_cycle_repairs_tests_broken_by_empty_diff_retry(
-    tmp_path: Path, settings: Settings
-) -> None:
+def test_cycle_repairs_tests_broken_by_empty_diff_retry(tmp_path: Path, settings: Settings) -> None:
     (tmp_path / "ui.html").write_text(
         '<textarea id="guidelines"></textarea>\n',
         encoding="utf-8",
     )
     (tmp_path / "check.py").write_text(
-        "from pathlib import Path\n"
-        "assert 'id=\"guidelines\"' in Path('ui.html').read_text()\n",
+        "from pathlib import Path\nassert 'id=\"guidelines\"' in Path('ui.html').read_text()\n",
         encoding="utf-8",
     )
     loco = tmp_path / ".loco"
@@ -338,9 +333,7 @@ def test_cycle_repairs_tests_broken_by_empty_diff_retry(
             _review_turn(True, "guidelines are in the settings panel"),
         ]
     )
-    result = run_cycle(
-        tmp_path, settings, llm, goal="Move guidelines into a settings menu"
-    )
+    result = run_cycle(tmp_path, settings, llm, goal="Move guidelines into a settings menu")
     assert result.status == "success"
     html = (tmp_path / "ui.html").read_text(encoding="utf-8")
     assert "settings-panel" in html
@@ -390,7 +383,7 @@ def test_retry_prompts_forbid_placeholder_work() -> None:
     assert "404 http://127.0.0.1:9/static/theme.css" in broken
     assert "StaticFiles" in broken
     assert "review_ui" in broken
-    repair = _test_repair_prompt("AssertionError: id=\"guidelines\"")
+    repair = _test_repair_prompt('AssertionError: id="guidelines"')
     assert "update that test" in repair
     assert "do not revert the goal" in repair.lower()
     assert 'id="guidelines"' in repair
@@ -444,8 +437,7 @@ def test_cycle_create_pr_uses_feature_branch_not_main(
     assert result.published is True
     assert result.pr_url == "https://example.test/pull/1"
     assert any(
-        event.get("kind") == "pr" and event.get("url") == result.pr_url
-        for event in result.events
+        event.get("kind") == "pr" and event.get("url") == result.pr_url for event in result.events
     )
     assert captured["push_branch"]
     assert str(captured["push_branch"]).startswith("loco/")
@@ -684,10 +676,7 @@ def test_cycle_accepts_iteration_limit_when_rendered_ui_is_verified(
         "agent_loco.runtime.improve.collect_ui_evidence",
         lambda *args, **kwargs: UiEvidence(
             ok=True,
-            snapshot=(
-                "button.rerun-btn: ↻ Rerun (72x24 @ 900,400)\n"
-                "span: +12 −3 (48x16 @ 16,400)"
-            ),
+            snapshot=("button.rerun-btn: ↻ Rerun (72x24 @ 900,400)\nspan: +12 −3 (48x16 @ 16,400)"),
             screenshot="ok.png",
             clicked=['[data-main-pane="history"]'],
         ),
@@ -769,8 +758,7 @@ def test_cycle_opens_pr_for_existing_feature_branch_without_new_files(
     assert captured["base"] in {"main", "master"}
     assert "without new files" in (result.reason or "")
     assert any(
-        event.get("kind") == "pr" and event.get("url") == result.pr_url
-        for event in result.events
+        event.get("kind") == "pr" and event.get("url") == result.pr_url for event in result.events
     )
 
 
@@ -942,17 +930,14 @@ def test_cycle_retries_then_opens_pr_when_goal_is_met(
     assert result.published is True
     assert result.pr_url == "https://example.test/pull/4"
     assert any(
-        event.get("kind") == "pr" and event.get("url") == result.pr_url
-        for event in result.events
+        event.get("kind") == "pr" and event.get("url") == result.pr_url for event in result.events
     )
     assert "Goal review confirmed" in str(captured["body"])
     assert "<header>" not in (tmp_path / "ui.html").read_text(encoding="utf-8")
     assert "toggle-sidebar" in (tmp_path / "ui.html").read_text(encoding="utf-8")
 
 
-def test_cycle_retries_unparsed_review(
-    tmp_path: Path, settings: Settings
-) -> None:
+def test_cycle_retries_unparsed_review(tmp_path: Path, settings: Settings) -> None:
     _green_project(tmp_path)
     config = tmp_path / ".loco" / "config.yaml"
     config.write_text(
@@ -992,9 +977,7 @@ def test_cycle_retries_unparsed_review(
     assert any(event.get("parsed") is True and event.get("met") is True for event in reviews)
 
 
-def test_cycle_keeps_retrying_after_noop_goal_retry(
-    tmp_path: Path, settings: Settings
-) -> None:
+def test_cycle_keeps_retrying_after_noop_goal_retry(tmp_path: Path, settings: Settings) -> None:
     _green_project(tmp_path)
     config = tmp_path / ".loco" / "config.yaml"
     config.write_text(
@@ -1038,9 +1021,7 @@ def test_cycle_keeps_retrying_after_noop_goal_retry(
     assert any("continuing instead of giving up" in message for message in steps)
 
 
-def test_cycle_review_prompt_includes_lockfile_versions(
-    tmp_path: Path, settings: Settings
-) -> None:
+def test_cycle_review_prompt_includes_lockfile_versions(tmp_path: Path, settings: Settings) -> None:
     _green_project(tmp_path)
     hashes = ",\n".join(f'                "sha256:{index:064x}"' for index in range(80))
     (tmp_path / "Pipfile.lock").write_text(
@@ -1119,9 +1100,7 @@ def _discord_lockfile(version: str) -> str:
     )
 
 
-def test_cycle_already_done_when_dependency_is_current(
-    tmp_path: Path, settings: Settings
-) -> None:
+def test_cycle_already_done_when_dependency_is_current(tmp_path: Path, settings: Settings) -> None:
     _green_project(tmp_path)
     goal = "Update the outdated discord.py library"
     (tmp_path / ".loco" / "goals.md").write_text(f"- [ ] {goal}\n", encoding="utf-8")

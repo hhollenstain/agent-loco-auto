@@ -20,6 +20,7 @@ def test_append_to_history() -> None:
 
         # Mock a cycle result to append
         from agent_loco.runtime.improve import CycleResult
+
         result = CycleResult(
             status="success",
             goal="Test goal",
@@ -28,7 +29,7 @@ def test_append_to_history() -> None:
             committed=True,
             published=True,
             commit_sha="abc123",
-            reason="done"
+            reason="done",
         )
 
         # First append
@@ -57,7 +58,7 @@ def test_append_to_history() -> None:
             committed=False,
             published=False,
             commit_sha=None,
-            reason="failed"
+            reason="failed",
         )
 
         _append_to_history(root, result2)
@@ -72,16 +73,19 @@ def test_append_to_history() -> None:
 
         # Test size limit - add many entries
         for i in range(150):  # Add more than 100 to test truncation
-            _append_to_history(root, CycleResult(
-                status="success",
-                goal=f"Goal {i}",
-                summary="summary",
-                tests_passed=True,
-                committed=True,
-                published=True,
-                commit_sha="hash",
-                reason="done"
-            ))
+            _append_to_history(
+                root,
+                CycleResult(
+                    status="success",
+                    goal=f"Goal {i}",
+                    summary="summary",
+                    tests_passed=True,
+                    committed=True,
+                    published=True,
+                    commit_sha="hash",
+                    reason="done",
+                ),
+            )
 
         with open(history_file) as f:
             history = json.load(f)
@@ -103,7 +107,7 @@ def test_run_cycle_writes_to_history() -> None:
         llm = OpenAICompatClient(
             model="test-model",
             base_url="http://localhost:11434/v1",  # Using dummy endpoint
-            api_key="test-key"  # Provide required api_key
+            api_key="test-key",  # Provide required api_key
         )
 
         # Run a cycle (just to make sure it doesn't break with a dummy setup)
