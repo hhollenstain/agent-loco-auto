@@ -29,8 +29,9 @@ that nothing calls.
 - After the implementation, call `run_tests` once. If the tree has not changed
   since the last run, loco reuses that result instead of running the suite again.
   Do not keep calling `run_tests` on an unchanged tree.
-- After tests, call `run_lint` when the project has a lint command. Fix every
-  finding. The cycle will not commit or open a PR while lint fails.
+- After tests, call `run_lint` when the project has a lint command. That
+  formats with ruff, then checks. Fix every finding, including files that
+  would be reformatted. The cycle will not commit or open a PR while lint fails.
 
 ## Anti-patterns
 
@@ -43,8 +44,8 @@ that nothing calls.
 
 - After the failing test, implement, then call `run_tests` once more.
   Loco reuses a previous result when the tree has not changed.
-- Then call `run_lint` if a lint command is configured. Unused imports and
-  long lines must be fixed before a PR.
+- Then call `run_lint` if a lint command is configured. Unused imports,
+  long lines, and unformatted files must be fixed before a PR.
 - If the change is UI, `review_ui` is the rendered-page seam: click the new
   control and fix errors, 404s, or dead buttons.
 - If existing tests assert old markup or APIs this goal replaces, update those

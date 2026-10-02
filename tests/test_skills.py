@@ -187,6 +187,21 @@ def test_discover_repo_skills_from_git_repo_root(tmp_path: Path) -> None:
     assert "repo-tdd" in enabled_skill_names(workspace)
 
 
+def test_repo_skill_is_injected_when_not_enabled(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    skill = tmp_path / "skills" / "agent-loco"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "---\nname: agent-loco\ndescription: Conventions.\n---\n\n"
+        "Run ruff format then ruff check before finishing.\n",
+        encoding="utf-8",
+    )
+    save_enabled_skills(tmp_path, [])
+    prompt = compose_system_prompt(tmp_path)
+    assert "### agent-loco" in prompt
+    assert "ruff format" in prompt.lower()
+
+
 def test_agent_loco_repo_skill_is_discoverable() -> None:
     root = Path(__file__).resolve().parents[1]
     skill_path = root / "skills" / "agent-loco" / "SKILL.md"
@@ -196,9 +211,13 @@ def test_agent_loco_repo_skill_is_discoverable() -> None:
     assert skills["agent-loco"].origin == "repo"
     assert skills["tdd"].origin != "repo"
     assert "public seam" in skills["agent-loco"].body.lower()
+    assert "ruff format" in skills["agent-loco"].body.lower()
     listed = skills["agent-loco"].public_dict()
     assert listed["summary"] == "Conventions for changing this agent-loco repository."
     assert "body" not in listed
+    prompt = compose_system_prompt(root)
+    assert "### agent-loco" in prompt
+    assert "ruff format" in prompt.lower()
 
 
 def test_discover_repo_skills_skips_loco_subdirectories(tmp_path: Path) -> None:

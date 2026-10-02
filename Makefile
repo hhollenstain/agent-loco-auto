@@ -10,6 +10,7 @@ test:
 	uv run pytest -q
 
 lint:
+	uv run ruff format src tests
 	uv run ruff check src tests
 
 doctor:

@@ -19,8 +19,8 @@ itself is also in `skills/agent-loco/SKILL.md`.
 
 - Python 3.12+. Start modules that use annotations with
   `from __future__ import annotations`.
-- Line length is 100. Check with `uv run ruff check src tests` before finishing.
-  Ruff selects `E`, `F`, `I`, `UP`, and `B`.
+- Line length is 100. Before finishing, run `uv run ruff format src tests`
+  then `uv run ruff check src tests`. Ruff selects `E`, `F`, `I`, `UP`, and `B`.
 - Use `pathlib.Path` for filesystem paths.
 - Name caught exceptions `exc`. Tool and HTTP handlers keep failures in-band:
   tools return `ToolResult(False, message)`, and HTTP errors are
@@ -57,7 +57,8 @@ itself is also in `skills/agent-loco/SKILL.md`.
 - If you add a bundled skill, keep `package-data` including `skills/*/SKILL.md`.
 - A cycle is finished only when the stated goal is wired through. A later cycle
   is not a substitute for missing data or UI.
-- After behavior changes, run `uv run pytest -q`.
+- After behavior changes, run `uv run pytest -q`. After Python edits, format
+  with ruff, then lint.
 
 ## Git
 

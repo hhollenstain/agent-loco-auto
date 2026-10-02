@@ -1173,8 +1173,10 @@ def _lint_repair_prompt(output: str) -> str:
         "The linter failed after the last changes. Fix every reported error. "
         "Ruff F401 means remove or use the unused import. E501 means wrap the "
         "line to 100 characters or less. I001 means sort imports the way ruff "
-        "does. Do not disable the linter. Do not skip a finding. After edits, "
-        "the configured lint command must pass.\n\n"
+        "does. If ruff reports files that would be reformatted, run the "
+        "formatter so the files match `ruff format`. Do not disable the "
+        "linter. Do not skip a finding. After edits, the configured lint "
+        "command must pass.\n\n"
         f"{(output or '').strip()}"
     )
 

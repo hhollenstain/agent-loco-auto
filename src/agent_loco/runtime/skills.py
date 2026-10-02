@@ -223,15 +223,15 @@ def sync_skill_source(root: Path, slug: str, *, ref: str | None = None) -> Skill
 
 
 def format_enabled_skills(root: Path) -> str:
-    enabled = [skill for skill in list_skills(root) if skill.enabled]
-    if not enabled:
+    selected = [skill for skill in list_skills(root) if skill.enabled or skill.origin == "repo"]
+    if not selected:
         return ""
     parts = [
         "## Enabled skills",
         "",
         "Follow these skills for this workspace. They are the process for this run.",
     ]
-    for skill in enabled:
+    for skill in selected:
         parts.extend(["", f"### {skill.name}"])
         if skill.description:
             parts.append(skill.description)

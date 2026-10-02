@@ -27,7 +27,7 @@ Walk the goal (issue body and comments count) and the files you changed:
 - No invented API that you did not see in the repo or in fetched docs.
 - After behavior changes: `run_tests` has run since the last edit.
 - After UI changes: `review_ui` has been called and the new control works.
-- After lint is configured: `run_lint` is clean.
+- After lint is configured: `run_lint` is clean, including ruff format.
 
 ## If anything fails
 

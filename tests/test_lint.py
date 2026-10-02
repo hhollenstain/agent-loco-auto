@@ -13,12 +13,12 @@ def test_infer_ruff_for_src_and_tests(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text("[project]\nname='x'\n", encoding="utf-8")
     (tmp_path / "src").mkdir()
     (tmp_path / "tests").mkdir()
-    assert infer_lint_command(tmp_path) == "ruff check src tests"
+    assert infer_lint_command(tmp_path) == "ruff format src tests && ruff check src tests"
 
 
 def test_infer_ruff_dot_without_src_layout(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text("[project]\nname='x'\n", encoding="utf-8")
-    assert infer_lint_command(tmp_path) == "ruff check ."
+    assert infer_lint_command(tmp_path) == "ruff format . && ruff check ."
 
 
 def test_empty_lint_command_disables_inference(tmp_path: Path) -> None:
@@ -35,7 +35,19 @@ def test_init_writes_inferred_lint_command(tmp_path: Path) -> None:
     (tmp_path / "tests").mkdir()
     write_default_project_files(tmp_path)
     config = (tmp_path / ".loco" / "config.yaml").read_text(encoding="utf-8")
-    assert "lint_command: ruff check src tests" in config
+    assert "lint_command: ruff format src tests && ruff check src tests" in config
+
+
+def test_run_lint_applies_ruff_format(tmp_path: Path) -> None:
+    src = tmp_path / "src"
+    src.mkdir()
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "pyproject.toml").write_text("[project]\nname='x'\n", encoding="utf-8")
+    messy = src / "app.py"
+    messy.write_text("x=1+2\n", encoding="utf-8")
+    result = run_project_lint(Workspace(tmp_path), infer_lint_command(tmp_path), 30)
+    assert result.ok
+    assert messy.read_text(encoding="utf-8") == "x = 1 + 2\n"
 
 
 def test_run_lint_is_a_wired_tool(tmp_path: Path) -> None:

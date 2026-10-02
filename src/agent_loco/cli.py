@@ -35,7 +35,7 @@ console = Console()
 
 def _load_config_file() -> None:
     """Load environment variables from a config file if it exists.
-    
+
     Supports .env, config.yaml, and config.yml in the current directory.
     """
     yaml = YAML()
@@ -44,7 +44,7 @@ def _load_config_file() -> None:
         Path.cwd() / "config.yaml",
         Path.cwd() / "config.yml",
     ]
-    
+
     for config_path in config_paths:
         if config_path.exists():
             try:
@@ -70,16 +70,16 @@ def _load_config_file() -> None:
 
 def _validate_env(require: bool = True) -> None:
     """Check required environment variables and exit with a helpful message if missing.
-    
+
     Args:
         require: If False, skip validation to allow UI mode without env vars.
     """
     if not require:
         return
-    
+
     # Try to load config file first
     _load_config_file()
-    
+
     missing = [var for var in REQUIRED_ENV_VARS if var not in os.environ]
     if missing:
         console.print("[red]ERROR:[/red] Required environment variables not set:")
@@ -92,11 +92,11 @@ def _validate_env(require: bool = True) -> None:
 
 def _settings(**overrides: object) -> Settings:
     """Create settings with optional overrides.
-    
+
     Args:
         **overrides: Settings to override. Can include model_name, model_base_url,
             create_pr, auto_commit, and any other Settings field.
-    
+
     Returns:
         A Settings instance with the overrides applied.
     """
@@ -380,7 +380,7 @@ def ui_command(
     auto_commit: Annotated[bool | None, typer.Option("--commit/--no-commit")] = None,
 ) -> None:
     """Start a local web UI to queue and run tasks.
-    
+
     The UI does not require environment variables set; it will load them from
     a .env, config.yaml, or config.yml file if present, but does not fail if
     they are missing. Users can configure settings via the UI.

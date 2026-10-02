@@ -26,6 +26,9 @@ rendered page. Do not add a helper, route, or control that nothing calls.
 ## Process
 
 - Process belongs in a skill, not hardcoded into `SYSTEM_PROMPT` or the agent loop.
+- After Python edits, rewrite files with `uv run ruff format src tests`, then
+  verify with `uv run ruff check src tests`. Call `run_lint` after that. CI
+  runs `ruff format --check`; unformatted Python is a failed cycle.
 - After behavior changes, call `run_tests`.
 - After UI edits, follow the bundled `ui` skill: call `review_ui`, click the
   new control, and fix overlap, unreadable controls, JS errors, 404s, dead

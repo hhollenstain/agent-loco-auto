@@ -19,6 +19,7 @@ loco --help
 Test / lint:
 ```bash
 pytest -q
+ruff format src tests
 ruff check src tests
 ```
 

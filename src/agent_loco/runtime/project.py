@@ -105,8 +105,8 @@ def infer_lint_command(root: Path) -> str | None:
         src = root / "src"
         tests_dir = root / "tests"
         if src.is_dir() and tests_dir.is_dir():
-            return "ruff check src tests"
-        return "ruff check ."
+            return "ruff format src tests && ruff check src tests"
+        return "ruff format . && ruff check ."
     package_json = root / "package.json"
     if package_json.exists() and '"lint"' in package_json.read_text(encoding="utf-8"):
         return "npm run lint"

@@ -30,10 +30,11 @@ def lint_tools(
         ToolSpec(
             name="run_lint",
             description=(
-                "Run the project's configured linter (for example ruff). "
-                "Call this after edits and before considering a pull request done. "
-                "If the workspace tree has not changed since the last run, "
-                "returns that result without running the linter again."
+                "Run the project's configured linter (for example ruff format "
+                "then ruff check). Call this after edits and before considering "
+                "a pull request done. If the workspace tree has not changed "
+                "since the last run, returns that result without running the "
+                "linter again."
             ),
             parameters=object_schema({}),
             handler=lambda: run_project_lint(
